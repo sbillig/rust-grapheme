@@ -1,7 +1,7 @@
 /* References:
 
 [0] State machine description:
-http://www.unicode.org/reports/tr29/#Default_Grapheme_Cluster_Table
+http://www.unicode.org/reports/tr29/#Grapheme_Cluster_Boundaries
 
 [1] Character classes:
 http://www.unicode.org/Public/UNIDATA/auxiliary/GraphemeBreakProperty.txt
@@ -14,15 +14,18 @@ NOTE: At the time of writing, there aren't any characters in the Prepend class
 considered here.
 */
 
-mod types;
+mod char_classes;
 
 fn main() {
-    use types::*;
+    use char_classes::*;
 
     static n: int = 12; // Number of character classes (see Class enum)
     type Svect = [[bool,..n],..n];
 
     let mut sv: Svect = [[false,..n],..n];
+
+    let RI = RegionalIndicator;
+    let SM = SpacingMark;
 
     let control = &[Control, CR, LF];
     let any = &[Extend, RI, SM,

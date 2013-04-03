@@ -1,3 +1,35 @@
+#[deriving(Eq)]
+pub enum CharClass {
+    // These are ordered to match the table on [2]
+    Other,
+    CR,
+    LF,
+    Control,
+    Extend,
+    SpacingMark,
+    L,
+    V,
+    T,
+    LV,
+    LVT,
+    RegionalIndicator
+}
+
+pub fn char_class(c: char) -> CharClass {
+    if is_cr(c) { CR }
+    else if is_lf(c) { LF }
+    else if is_control(c) { Control }
+    else if is_extend(c) { Extend }
+    else if is_spacing_mark(c) { SpacingMark }
+    else if is_l(c) { L }
+    else if is_v(c) { V }
+    else if is_t(c) { T }
+    else if is_lv(c) { LV }
+    else if is_lvt(c) { LVT }
+    else if is_regional_indicator(c) { RegionalIndicator }
+    else { Other }
+}
+
 pub fn is_cr(c: char) -> bool {
     match c {
           '\x0d'
@@ -1126,7 +1158,7 @@ pub fn is_regional_indicator(c: char) -> bool {
     }
 }
 
-pub fn is_spacingmark(c: char) -> bool {
+pub fn is_spacing_mark(c: char) -> bool {
     match c {
           '\u0903'
         | '\u093b'
@@ -1262,4 +1294,3 @@ pub fn is_v(c: char) -> bool {
         _ => false
     }
 }
-
