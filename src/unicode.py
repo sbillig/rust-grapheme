@@ -13,10 +13,10 @@
 import fileinput, re, os, sys
 
 
-def fetch(f):
+def fetch(f, p=''):
     if not os.path.exists(f):
-        os.system("curl -O http://www.unicode.org/Public/UNIDATA/%s"
-                  % f)
+        os.system("curl -O http://www.unicode.org/Public/UNIDATA/%s%s"
+                  % (p, f))
 
     if not os.path.exists(f):
         sys.stderr.write("cannot load %s" % f)
@@ -72,10 +72,9 @@ def load_unicode_data(f):
     return (canon_decomp, compat_decomp, gencats)
 
 
-def load_derived_core_properties(f):
-    fetch(f)
+def load_derived_core_properties(f, p, interestingprops):
+    fetch(f, p)
     derivedprops = {}
-    interestingprops = ["XID_Start", "XID_Continue", "Alphabetic"]
     re1 = re.compile("^([0-9A-F]+) +; (\w+)")
     re2 = re.compile("^([0-9A-F]+)\.\.([0-9A-F]+) +; (\w+)")
 
@@ -112,29 +111,27 @@ def escape_char(c):
         return "'\\u%4.4x'" % c
     return "'\\U%8.8x'" % c
 
-def emit_property_module(f, mod, tbl):
-    f.write("mod %s {\n" % mod)
+def emit_property_module(f, tbl):
     keys = tbl.keys()
     keys.sort()
     for cat in keys:
-        f.write("    pure fn %s(c: char) -> bool {\n" % cat)
-        f.write("        ret alt c {\n")
+        f.write("pub fn is_%s(c: char) -> bool {\n" % cat.lower())
+        f.write("    match c {\n")
         prefix = ' '
         for pair in tbl[cat]:
             if pair[0] == pair[1]:
-                f.write("            %c %s\n" %
+                f.write("        %c %s\n" %
                         (prefix, escape_char(pair[0])))
             else:
-                f.write("            %c %s to %s\n" %
+                f.write("        %c %s .. %s\n" %
                         (prefix,
                          escape_char(pair[0]),
                          escape_char(pair[1])))
             prefix = '|'
-        f.write("              { true }\n")
-        f.write("            _ { false }\n")
-        f.write("        };\n")
-        f.write("    }\n\n")
-    f.write("}\n")
+        f.write("          => true,\n")
+        f.write("        _ => false\n")
+        f.write("    }\n")
+        f.write("}\n\n")
 
 def emit_decomp_module(f, canon, compat):
     canon_keys = canon.keys()
@@ -186,15 +183,22 @@ def emit_decomp_module(f, canon, compat):
     f.write("    }\n")
     f.write("}\n\n")
 
-r = "unicode.rs"
+r = "out.rs"
 for i in [r]:
     if os.path.exists(i):
         os.remove(i);
 rf = open(r, "w")
 
-(canon_decomp, compat_decomp, gencats) = load_unicode_data("UnicodeData.txt")
-emit_decomp_module(rf, canon_decomp, compat_decomp)
-emit_property_module(rf, "general_category", gencats)
+#(canon_decomp, compat_decomp, gencats) = load_unicode_data("UnicodeData.txt")
+#emit_decomp_module(rf, canon_decomp, compat_decomp)
+#emit_property_module(rf, "general_category", gencats)
 
-derived = load_derived_core_properties("DerivedCoreProperties.txt")
-emit_property_module(rf, "derived_property", derived)
+#derived = load_derived_core_properties("DerivedCoreProperties.txt", "",
+#                                       ["XID_Start", "XID_Continue", "Alphabetic"])
+#emit_property_module(rf, "derived_property", derived)
+
+derived = load_derived_core_properties("GraphemeBreakProperty.txt", "auxiliary/",
+                                       ["CR", "LF", "Control", "Extend",
+                                        "SpacingMark", "L", "V", "T", "LV", "LVT",
+                                        "Regional_Indicator"])
+emit_property_module(rf, derived)
