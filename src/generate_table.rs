@@ -19,10 +19,7 @@ mod char_classes;
 fn main() {
     use char_classes::*;
 
-    static n: int = 12; // Number of character classes (see Class enum)
-    type Svect = [[bool,..n],..n];
-
-    let mut sv: Svect = [[false,..n],..n];
+    let mut sv: LookupTable = [[false,..CLASS_CNT],..CLASS_CNT];
 
     let RI = RegionalIndicator;
     let SM = SpacingMark;
@@ -48,14 +45,14 @@ fn main() {
 
     print_static_matrix(&sv);
 
-    fn write(val: bool, sv: &mut Svect, from: &[CharClass], to: &[CharClass]) {
+    fn write(val: bool, sv: &mut LookupTable, from: &[CharClass], to: &[CharClass]) {
         for from.each |&f| {
             for to.each |&t| {
                 sv[f as int][t as int] = val;
             }
         }
     }
-    fn print_static_matrix(sv: &Svect) {
+    fn print_static_matrix(sv: &LookupTable) {
         print("[");
         for sv.eachi |i, &row| {
             if i != 0 {

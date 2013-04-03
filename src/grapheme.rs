@@ -7,9 +7,18 @@
 
 mod char_classes;
 
-#[test]
-fn blah() {
+#[cfg(test)]
+mod tests {
     use char_classes::*;
-    assert!(is_spacing_mark('\u09cc'));
-    assert!(char_class('\u09cc') == SpacingMark);
+
+    #[test]
+    fn blah() {
+        assert!(is_spacing_mark('\u09cc'));
+        assert!(char_class('\u09cc') == SpacingMark);
+    }
+
+    #[test]
+    fn f() {
+        assert!(lookup_table[0][4]);
+    }
 }

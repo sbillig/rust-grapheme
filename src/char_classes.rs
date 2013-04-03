@@ -15,6 +15,24 @@ pub enum CharClass {
     RegionalIndicator
 }
 
+pub static CLASS_CNT: int = 12;
+pub type LookupTable = [[bool,..CLASS_CNT],..CLASS_CNT];
+
+pub static LOOKUP: LookupTable =
+    [[false, false, false, false, true, true, false, false, false, false, false, false],
+     [false, false, true, false, false, false, false, false, false, false, false, false],
+     [false, false, false, false, false, false, false, false, false, false, false, false],
+     [false, false, false, false, false, false, false, false, false, false, false, false],
+     [false, false, false, false, true, true, false, false, false, false, false, false],
+     [false, false, false, false, true, true, false, false, false, false, false, false],
+     [false, false, false, false, true, true, true, true, false, true, true, false],
+     [false, false, false, false, true, true, false, true, true, false, false, false],
+     [false, false, false, false, true, true, false, false, true, false, false, false],
+     [false, false, false, false, true, true, false, true, true, false, false, false],
+     [false, false, false, false, true, true, false, false, true, false, false, false],
+     [false, false, false, false, true, true, false, false, false, false, false, true]];
+
+
 pub fn char_class(c: char) -> CharClass {
     if is_cr(c) { CR }
     else if is_lf(c) { LF }
