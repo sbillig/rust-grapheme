@@ -50,20 +50,31 @@ mod tests {
     use char_classes::*;
     use super::*;
 
-    #[test]
-    fn test_slice() {
-        use core::str::raw::slice_bytes;
-        assert!("b" == unsafe { slice_bytes("abc", 1, 2)});
-    }
+    static TESTS: [&'static [&'static str], ..16] = [
+        &[""],
+        &["x"],
+        &["a","b"],
+        &["a\u030a","a\u030a\u030a\u030a"],
+        &["\u1100\u1161\u11a8"],
+        &["\u0ba8\u0bbf"],
+
+        //unicode.org/Public/UNIDATA/auxiliary/GraphemeBreakTest.html#s1
+        &["a","\U0001f1e6","b"],
+        &["\U0001f1f7\U0001f1fa"],
+        &["\U0001f1f7\U0001f1fa\U0001f1f8"],
+        &["\U0001f1f7\U0001f1fa\U0001f1f8\U0001f1ea"],
+        &["\U0001f1f7\U0001f1fa","\u200b","\U0001f1f8\U0001f1ea"],
+        &["\U0001f1e6\U0001f1e7\U0001f1e8"],
+        &["\U0001f1e6\u200d","\U0001f1e7\U0001f1e8"],
+        &["\U0001f1e6\U0001f1e7\u200d","\U0001f1e8"],
+        &[" \u200d","\u0646"],
+        &["\u0646\u200d"," "]
+    ];
 
     #[test]
     fn test_each_cluster() {
-        let tests = [
-            ~[~"\U0001f1f7\U0001f1fa",~"\u200b",~"\U0001f1f8\U0001f1ea"],
-            ~[~"h",~"i"]
-        ];
-        for tests.each |&chunks| {
-            let s = concat(chunks);
+        for TESTS.each |&chunks| {
+            let s = connect_slices(chunks, "");
             let mut i = 0u;
             for each_cluster(s) |clus| {
                 assert!(clus == chunks[i]);
@@ -74,17 +85,15 @@ mod tests {
 
     #[test]
     fn test_cluster_count() {
-        fn t(s: &str, c: uint) {
-            assert!(cluster_count(s) == c);
+        for TESTS.each |&chunks| {
+            let s = connect_slices(chunks, ""),
+                c = cluster_count(s);
+            if s.len() == 0 {
+                assert!(c == 0);
+            } else {
+                assert!(c == chunks.len());
+            }
         }
-        t(~"", 0);
-        t(~"hello", 5);
-        t(~"a\U0001f1e6b", 3);
-        t(~"\U0001f1f7\U0001f1fa", 1);
-        t(~"\U0001f1f7\U0001f1fa\U0001f1f8", 1);
-        t(~"\U0001f1f7\U0001f1fa\U0001f1f8\U0001f1ea", 1);
-        t(~"\U0001f1f7\U0001f1fa\u200b\U0001f1f8\U0001f1ea", 3);
-        t(~"\u0020\u200d\u0646", 2);
     }
 
     #[test]
