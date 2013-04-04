@@ -19,7 +19,7 @@ mod char_classes;
 fn main() {
     use char_classes::*;
 
-    let mut sv: LookupTable = [[false,..CLASS_CNT],..CLASS_CNT];
+    let mut sv: LookupTable = [[true,..CLASS_CNT],..CLASS_CNT];
 
     let RI = RegionalIndicator;
     let SM = SpacingMark;
@@ -29,8 +29,8 @@ fn main() {
                 L, V, T, LV, LVT,
                 Other];
 
-    let join  = |from, to| { write(true,  &mut sv, from, to) };
-    let split = |from, to| { write(false, &mut sv, from, to) };
+    let join  = |from, to| { write(false,  &mut sv, from, to) };
+    let split = |from, to| { write(true, &mut sv, from, to) };
 
     // GB1,2 are 'break at start and end of text'
     join(&[CR],    &[LF]);         // GB3

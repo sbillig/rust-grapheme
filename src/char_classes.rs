@@ -15,22 +15,28 @@ pub enum CharClass {
     RegionalIndicator
 }
 
+#[inline(always)]
+pub fn break_between(left: CharClass, right: CharClass) -> bool {
+    BREAK_BETWEEN[left as int][right as int]
+}
+
 pub static CLASS_CNT: int = 12;
 pub type LookupTable = [[bool,..CLASS_CNT],..CLASS_CNT];
 
-pub static LOOKUP: LookupTable =
-    [[false, false, false, false, true, true, false, false, false, false, false, false],
-     [false, false, true, false, false, false, false, false, false, false, false, false],
-     [false, false, false, false, false, false, false, false, false, false, false, false],
-     [false, false, false, false, false, false, false, false, false, false, false, false],
-     [false, false, false, false, true, true, false, false, false, false, false, false],
-     [false, false, false, false, true, true, false, false, false, false, false, false],
-     [false, false, false, false, true, true, true, true, false, true, true, false],
-     [false, false, false, false, true, true, false, true, true, false, false, false],
-     [false, false, false, false, true, true, false, false, true, false, false, false],
-     [false, false, false, false, true, true, false, true, true, false, false, false],
-     [false, false, false, false, true, true, false, false, true, false, false, false],
-     [false, false, false, false, true, true, false, false, false, false, false, true]];
+static BREAK_BETWEEN: LookupTable =
+    //          Other  CR    LF    Cont   Ext    SM     L      V      T      LV    LVT     RI
+    /* Ot  */ [[true, true, true,  true, false, false, true,  true,  true,  true,  true,  true],
+    /* CR  */  [true, true, false, true, true,  true,  true,  true,  true,  true,  true,  true],
+    /* LF  */  [true, true, true,  true, true,  true,  true,  true,  true,  true,  true,  true],
+    /* Ct  */  [true, true, true,  true, true,  true,  true,  true,  true,  true,  true,  true],
+    /* Ex  */  [true, true, true,  true, false, false, true,  true,  true,  true,  true,  true],
+    /* SM  */  [true, true, true,  true, false, false, true,  true,  true,  true,  true,  true],
+    /* L   */  [true, true, true,  true, false, false, false, false, true,  false, false, true],
+    /* V   */  [true, true, true,  true, false, false, true,  false, false, true,  true,  true],
+    /* T   */  [true, true, true,  true, false, false, true,  true,  false, true,  true,  true],
+    /* LV  */  [true, true, true,  true, false, false, true,  false, false, true,  true,  true],
+    /* LVT */  [true, true, true,  true, false, false, true,  true,  false, true,  true,  true],
+    /* RI  */  [true, true, true,  true, false, false, true,  true,  true,  true,  true,  false]];
 
 
 pub fn char_class(c: char) -> CharClass {

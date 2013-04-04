@@ -15,10 +15,10 @@ mod tests {
     fn blah() {
         assert!(is_spacing_mark('\u09cc'));
         assert!(char_class('\u09cc') == SpacingMark);
+        assert!(char_class('\U0001f1e6') == RegionalIndicator);
     }
 
     #[test]
     fn f() {
-        assert!(lookup_table[0][4]);
     }
 }
