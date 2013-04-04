@@ -36,12 +36,11 @@ pub fn cluster_count(s: &str) -> uint {
     count
 }
 
-
 #[cfg(test)]
 mod tests {
     use char_classes::*;
+    use super::*;
 
-/*
     #[test]
     fn test_cluster_count() {
         fn t(s: &str, c: uint) {
@@ -56,15 +55,11 @@ mod tests {
         t(~"\U0001f1f7\U0001f1fa\u200b\U0001f1f8\U0001f1ea", 3);
         t(~"\u0020\u200d\u0646", 2);
     }
-*/
+
     #[test]
     fn blah() {
         assert!(is_spacing_mark('\u09cc'));
         assert!(char_class('\u09cc') == SpacingMark);
         assert!(char_class('\U0001f1e6') == RegionalIndicator);
-    }
-
-    #[test]
-    fn f() {
     }
 }
