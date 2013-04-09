@@ -95,11 +95,21 @@ mod tests {
             }
         }
     }
-
     #[test]
-    fn blah() {
-        assert!(is_spacing_mark('\u09cc'));
-        assert!(char_class('\u09cc') == SpacingMark);
+    fn test_classes() {
+        assert!(char_class('\n') == LF);
+        assert!(char_class('\r') == CR);
+        assert!(char_class('\t') == Control);
+        assert!(char_class('\u1100') == L);
+        assert!(char_class('\u1160') == V);
+        assert!(char_class('\u11A8') == T);
+        assert!(char_class('\uac00') == LV);
+        assert!(char_class('\uac01') == LVT);
+        assert!(char_class('\u0903') == SpacingMark);
+        assert!(char_class('\u0308') == Extend);
+        assert!(char_class(' ') == Other);
+        assert!(char_class('a') == Other);
+        assert!(char_class('S') == Other);
         assert!(char_class('\U0001f1e6') == RegionalIndicator);
     }
 }
