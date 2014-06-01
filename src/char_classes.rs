@@ -1,4 +1,4 @@
-#[deriving(Eq)]
+#[deriving(PartialEq, Show)]
 pub enum CharClass {
     // These are ordered to match the table on [2]
     Other,
@@ -17,7 +17,7 @@ pub enum CharClass {
 
 #[inline(always)]
 pub fn break_between(left: CharClass, right: CharClass) -> bool {
-    BREAK_BETWEEN[left as int][right as int]
+    BREAK_BETWEEN[left as uint][right as uint]
 }
 
 pub static CLASS_CNT: int = 12;
@@ -80,7 +80,6 @@ pub fn is_control(c: char) -> bool {
         | '\u2060' .. '\u2064'
         | '\u2065' .. '\u2069'
         | '\u206a' .. '\u206f'
-        | '\ud800' .. '\udfff'
         | '\ufeff'
         | '\ufff0' .. '\ufff8'
         | '\ufff9' .. '\ufffb'
