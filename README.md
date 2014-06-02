@@ -11,19 +11,20 @@ Use:
 
 ```rust
 extern mod grapheme;
+use grapheme::GraphemeList;
 
 fn main() {
     let s = "u\u0308\u00fc";
 
-    let by = s.len(),
-        ch = s.char_len(),
-        cl = grapheme::cluster_count(s);
+    let by = s.len();
+    let ch = s.char_len();
+    let cl = s.graphemes().len();
 
-    io::println(fmt!("bytes: %?, chars: %?, clusters: %?", by, ch, cl));
+    println!("bytes: {}, chars: {}, clusters: {}", by, ch, cl);
 
-    for grapheme::each_cluster(s) |c| {
+    for c in s.graphemes() {
         // c is a str slice
-        io::println(fmt!("%s", c))
+        println!("{}", c);
     }
 }
 ```

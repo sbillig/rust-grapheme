@@ -1,52 +1,90 @@
-#[link(name = "grapheme",
-       vers = "0.1.0",
-       uuid = "a91f4949-e26e-4822-ba82-bfc468d6de77",
-       url  = "https://github.com/sbillig/rust-grapheme")];
+#![feature(globs)]
+#![crate_id(name = "grapheme#0.1.1")]
+#![crate_type = "lib"]
 
-#[crate_type = "lib"];
-
-use core::str::*;
+use std::str::*;
 mod char_classes;
 
-pub fn cluster_count(s: &str) -> uint {
-    let mut c = 0u;
-    do each_cluster(s) |_| { c += 1; true }
-    c
+pub struct Graphemes<'a> {
+  gl:     &'a str,
+  len:    uint,
+  class:  char_classes::CharClass,
+  pos:    uint,
+  startp: uint,
 }
 
-pub fn each_cluster<'a>(s: &'a str, it: &fn(&'a /*'*/ str) -> bool) {
+impl<'a> Iterator<&'a str> for Graphemes<'a> {
+  fn next(&mut self) -> Option<&'a str> {
     use char_classes::*;
-    use core::str::raw::slice_bytes;
+    use std::str::raw::slice_bytes;
 
-    let len = s.len();
+    /*
+    println!("Iterating..");
+    println!("  self.gl     == \"{}\"", self.gl);
+    println!("  self.len    == {}", self.len);
+    println!("  self.class  == {}", self.class);
+    println!("  self.pos    == {}", self.pos);
+    println!("  self.startp == {}", self.startp);
+    */
+
+    if self.startp >= self.len {
+      return None;
+    }
+
+    let mut prev_startp = self.startp;
+    while self.pos < self.len {
+      let prev_class  = self.class;
+      let prev_pos    = self.pos;
+      prev_startp     = self.startp;
+
+      let CharRange {ch, next} = self.gl.char_range_at(self.pos);
+      self.class = char_class(ch);
+      self.pos   = next;
+
+      if break_between(prev_class, self.class) {
+        self.startp = prev_pos;
+        return Some(unsafe {
+          slice_bytes(self.gl, prev_startp, prev_pos)
+        });
+      }
+    }
+    self.startp = self.len;
+    Some(unsafe {
+      slice_bytes(self.gl, prev_startp, self.len)
+    })
+  }
+}
+
+pub trait GraphemeList {
+  fn graphemes<'a>(&'a self) -> Graphemes<'a>;
+}
+
+impl<T: std::str::Str> GraphemeList for T {
+  fn graphemes<'a>(&'a self) -> Graphemes<'a> {
+    let len = self.as_slice().len();
     if len == 0 {
-        return;
+      return Graphemes {
+        gl:     self.as_slice(),
+        len:    0,
+        class:  char_classes::Other,
+        pos:    0,
+        startp: 0,
+      };
+    };
+    let CharRange {ch, next} = self.as_slice().char_range_at(0);
+    Graphemes {
+      gl:     self.as_slice(),
+      len:    len,
+      class:  char_classes::char_class(ch),
+      pos:    next,
+      startp: 0,
     }
-
-    let CharRange {ch, next} = char_range_at(s, 0);
-
-    let mut left = char_class(ch),
-            pos = next,
-            startp = 0;
-
-    while pos < len {
-        let CharRange {ch, next} = char_range_at(s, pos);
-        let right = char_class(ch);
-
-        if break_between(left, right) {
-            if !it(unsafe{slice_bytes(s, startp, pos)}) { return; }
-            startp = pos;
-        }
-
-        left = right;
-        pos = next;
-    }
-    it(unsafe{slice_bytes(s, startp, len)});
+  }
 }
 
 #[cfg(test)]
 mod tests {
-    use core::str::*;
+    use std::str::*;
     use char_classes::*;
     use super::*;
 
@@ -73,10 +111,12 @@ mod tests {
 
     #[test]
     fn test_each_cluster() {
-        for TESTS.each |&chunks| {
-            let s = connect_slices(chunks, "");
+        for chunks in TESTS.iter() {
+            let s = chunks.concat();
             let mut i = 0u;
-            for each_cluster(s) |clus| {
+            for clus in s.graphemes() {
+                println!("chunks[{}]: {}", i, chunks[i]);
+                println!("clus: {}", clus);
                 assert!(clus == chunks[i]);
                 i += 1;
             }
@@ -85,12 +125,16 @@ mod tests {
 
     #[test]
     fn test_cluster_count() {
-        for TESTS.each |&chunks| {
-            let s = connect_slices(chunks, ""),
-                c = cluster_count(s);
+        for chunks in TESTS.iter() {
+            let s = chunks.concat();
+            println!("s: \"{}\" [\"{}\"]", s, s.escape_default())
+            let c = s.graphemes().len();
             if s.len() == 0 {
+                println!("c: {}", c);
                 assert!(c == 0);
             } else {
+                println!("c: {}", c);
+                println!("chunks.len(): {}", chunks.len());
                 assert!(c == chunks.len());
             }
         }
