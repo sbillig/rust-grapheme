@@ -1,3 +1,5 @@
+# Note: This library has not been maintained in a while. You should probably be using the [unicode-segmentation](https://crates.io/crates/unicode-segmentation) crate instead.
+
 rust-grapheme
 =============
 
